@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Foundation\Auth\User as a;
 use Throwable;
 
 class AuthController extends Controller
@@ -92,7 +93,7 @@ class AuthController extends Controller
             return response()->json(
                 [
                     'status'=> true,
-                    'message' => 'Account Created Successfully',
+                    'message' => 'Logged In Successfully',
                     'data' => $user,
                     'token' => $user->createToken('API')->plainTextToken
                 ], 200);
@@ -104,5 +105,32 @@ class AuthController extends Controller
                     'message' => $err->getMessage()
                 ], 500);
         }
+    }
+
+    public function profile(Request $request){
+        Try {
+            $userData = auth()->user();
+            return response()->json(
+                [
+                    'status'=> true,
+                    'message' => 'Get Data Success',
+                    'data' => $userData,
+                ], 200);
+        } catch (Throwable $err) {
+            return response()->json(
+                [
+                    'status'=> false,
+                    'message' => $err->getMessage()
+                ], 500);
+        }
+    }
+
+    public function logout(Request $request) {
+        $request->user()->tokens()->delete();
+        return response()->json(
+            [
+                'status'=> true,
+                'message' => 'Logged Out',
+            ], 200);
     }
 }
