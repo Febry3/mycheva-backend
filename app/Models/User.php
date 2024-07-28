@@ -26,6 +26,7 @@ class User extends Authenticatable
         'fakultas',
         'prodi',
         'nim',
+        'role'
     ];
 
     /**

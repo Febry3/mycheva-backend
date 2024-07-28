@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('prodi');
             $table->string('url_foto_profile')->nullable();
             $table->string('nim');
-            $table->rememberToken()->nullable();
+            $table->string('role')->default('member');
             $table->timestamps();
         });
 
