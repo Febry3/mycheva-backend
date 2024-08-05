@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Absensi\AbsensiController;
 use App\Http\Controllers\Api\Admin\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\Mentor\MentorController;
+use App\Http\Controllers\Api\MemberController;
 use App\Http\Controllers\Api\Schedule\ScheduleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -46,4 +47,11 @@ Route::middleware('auth:sanctum', 'ability:mentor')->group(function () {
     Route::post('Schedule/{id}/Attendance', function (Request $request, $id) {
         return AbsensiController::attend($request, $id);
     });
+
+    //route member
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::post('posts', [MemberController::class, 'createPost']);
+        Route::post('posts/{postId}/comments', [MemberController::class, 'commentOnPost']);
+    });
+
 });
