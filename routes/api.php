@@ -1,16 +1,14 @@
 <?php
 
-use App\Http\Controllers\Api\Absensi\AbsensiController;
-use App\Http\Controllers\Api\Admin\AdminController;
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\Mentor\MentorController;
-use App\Http\Controllers\Api\Schedule\ScheduleController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
-// Route::get('/user', function (Request $request) {
-//     return $request->user();
-// })->middleware('auth:sanctum');
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\Admin\AdminController;
+use App\Http\Controllers\Api\Mentor\MentorController;
+use App\Http\Controllers\Api\Absensi\AbsensiController;
+use App\Http\Controllers\Api\Schedule\ScheduleController;
+use App\Http\Controllers\Api\Pengumuman\PengumumanController;
+use App\Http\Controllers\Api\Bookmark\BookmarkController;
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
@@ -21,6 +19,10 @@ Route::middleware('auth:sanctum', 'ability:member,admin,mentor')->group(function
     Route::get('Schedule/{id}', function ($id) {
         return ScheduleController::getSchedule($id);
     });
+    Route::get('Announcement', [PengumumanController::class, 'getAllPengumuman']);
+    Route::get('Announcement/{id}', function ($id) {
+        return PengumumanController::getAnnouncementById($id);
+    });
 });
 
 //route atmin
@@ -28,7 +30,9 @@ Route::post('CreateAccount', [AdminController::class, 'createAccount'])->middlew
 
 //route mentor
 Route::middleware('auth:sanctum', 'ability:mentor')->group(function () {
-    Route::get('MembersByDivisi', [MentorController::class, 'showMembersByDivision']);
+    Route::get('Members/{divisi}', function (Request $request, $divisi) {
+        return MentorController::showMembersByDivision($request, $divisi);
+    });
     Route::get('Members', [MentorController::class, 'showAllMembers']);
     Route::get('Member/{id}', function ($id) {
         return MentorController::showMember($id);
@@ -46,4 +50,21 @@ Route::middleware('auth:sanctum', 'ability:mentor')->group(function () {
     Route::post('Schedule/{id}/Attendance', function (Request $request, $id) {
         return AbsensiController::attend($request, $id);
     });
+
+    Route::post('announcement', [PengumumanController::class, 'createAnnouncement']);
+    Route::patch('announcement/{id}', function (Request $request, $id) {
+        return PengumumanController::updateAnnouncement($request, $id);
+    });
+    Route::delete('announcement/{id}', function ($id) {
+        return PengumumanController::deleteAnnouncement($id);
+    });
+});
+
+//route bookmark
+Route::middleware('auth:sanctum', 'ability:member,admin,mentor')->group(function () {
+    Route::post('/announcement/bookmark', [BookmarkController::class, 'bookmark']);
+    Route::delete('/announcement/bookmark/{id_pengumuman}', function ($id_pengumuman) {
+        return BookmarkController::unbookmark($id_pengumuman);
+    });
+    Route::get('/announcement/bookmark', [BookmarkController::class, 'showBookmarkByUser']);
 });

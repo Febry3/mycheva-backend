@@ -116,28 +116,28 @@ class AuthController extends Controller
         }
     }
 
-    public function profile()
-    {
-        try {
-            $userData = auth()->user();
-            return response()->json(
-                [
-                    'status' => true,
-                    'message' => 'Get Data Success',
-                    'data' => $userData,
-                ],
-                200
-            );
-        } catch (Throwable $err) {
-            return response()->json(
-                [
-                    'status' => false,
-                    'message' => $err->getMessage()
-                ],
-                500
-            );
-        }
-    }
+    // public function profile()
+    // {
+    //     try {
+    //         // $userData = auth()->user();
+    //         return response()->json(
+    //             [
+    //                 'status' => true,
+    //                 'message' => 'Get Data Success',
+    //                 'data' => $userData,
+    //             ],
+    //             200
+    //         );
+    //     } catch (Throwable $err) {
+    //         return response()->json(
+    //             [
+    //                 'status' => false,
+    //                 'message' => $err->getMessage()
+    //             ],
+    //             500
+    //         );
+    //     }
+    // }
 
     public function logout(Request $request)
     {

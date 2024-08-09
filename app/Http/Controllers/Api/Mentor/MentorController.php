@@ -36,21 +36,8 @@ class MentorController extends Controller
         );
     }
 
-    static public function showMembersByDivision(Request $request)
+    static public function showMembersByDivision(Request $request, $divisi)
     {
-        $validateRequest = Validator::make($request->all(), [
-            'divisi' => 'required'
-        ]);
-
-        if ($validateRequest->fails()) {
-            return response()->json(
-                [
-                    'status' => false,
-                    'message' => $validateRequest->errors()
-                ],
-                69
-            );
-        }
 
         if (Auth::user()->role != 'mentor') {
             return response()->json(
@@ -62,7 +49,7 @@ class MentorController extends Controller
             );
         }
 
-        $data = User::where('divisi', '=', $request['divisi'], 'and')->where('role', '=', 'member')->get();
+        $data = User::where('divisi', '=', $divisi, 'and')->where('role', '=', 'member')->get();
 
         return response()->json(
             [

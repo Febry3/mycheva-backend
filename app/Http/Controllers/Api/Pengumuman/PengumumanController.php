@@ -1,41 +1,23 @@
 <?php
 
-namespace App\Http\Controllers\Api\Schedule;
+namespace App\Http\Controllers\Api\Pengumuman;
 
-use Throwable;
-use App\Models\Jadwal;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Pengumuman;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\ValidationException;
+use Throwable;
 
-class ScheduleController extends Controller
+class PengumumanController extends Controller
 {
-    private static function validateRequest(Request $request)
+    static public function createAnnouncement(Request $request)
     {
-        return Validator::make($request->all(), [
+        $validateRequest = Validator::make($request->all(), [
             'judul' => 'required',
-            'deskripsi' => 'required',
-            'ruangan' => 'required',
-            'jenis_kegiatan' => 'required',
-            'divisi' => 'required',
-            'tanggal_mulai' => 'required',
-            'tanggal_berakhir' => 'required',
+            'isi' => 'required'
         ]);
-    }
 
-    public static function authenticateUser($user)
-    {
-        if ($user->role != 'mentor') {
-            throw ValidationException::withMessages(['Unauthenticated']);
-        }
-        return true;
-    }
-
-    static public function createSchedule(Request $request)
-    {
-        $validateRequest = self::validateRequest($request);
         if ($validateRequest->fails()) {
             return response()->json(
                 [
@@ -46,7 +28,7 @@ class ScheduleController extends Controller
             );
         }
 
-        if (!self::authenticateUser(Auth::User())) {
+        if (Auth::user()->role != 'mentor') {
             return response()->json(
                 [
                     'status' => false,
@@ -57,21 +39,16 @@ class ScheduleController extends Controller
         }
 
         try {
-            Jadwal::create([
+            Pengumuman::create([
                 'judul' => $request->judul,
-                'deskripsi' => $request->deskripsi,
-                'tanggal_mulai' => $request->tanggal_mulai,
-                'tanggal_berakhir' => $request->tanggal_berakhir,
-                'ruangan' => $request->ruangan,
-                'jenis_kegiatan' => $request->jenis_kegiatan,
-                'divisi' => $request->divisi,
+                'isi' => $request->isi,
                 'id_user' => Auth::user()->id
             ]);
 
             return response()->json(
                 [
                     'status' => true,
-                    'message' => 'Data Created',
+                    'message' => 'Created'
                 ],
                 200
             );
@@ -86,9 +63,13 @@ class ScheduleController extends Controller
         }
     }
 
-    static public function updateSchedule(Request $request, $id)
+    static public function updateAnnouncement(Request $request, $id)
     {
-        $validateRequest = self::validateRequest($request);
+        $validateRequest = Validator::make($request->all(), [
+            'judul' => 'required',
+            'isi' => 'required'
+        ]);
+
         if ($validateRequest->fails()) {
             return response()->json(
                 [
@@ -99,7 +80,7 @@ class ScheduleController extends Controller
             );
         }
 
-        if (!self::authenticateUser(Auth::user()) && Auth::user()->id == Jadwal::find($id)->id_user) {
+        if (Auth::user()->role != 'mentor' && Auth::user()->id != Pengumuman::find($id)->id_user) {
             return response()->json(
                 [
                     'status' => false,
@@ -110,35 +91,19 @@ class ScheduleController extends Controller
         }
 
         try {
-            if (!Jadwal::find($id)) {
-                return response()->json(
-                    [
-                        'status' => false,
-                        'message' => 'Data not found',
-                    ],
-                    200
-                );
-            }
-
-            Jadwal::where('id_jadwal', "=", $id)->update([
+            Pengumuman::find($id)->update([
                 'judul' => $request->judul,
-                'deskripsi' => $request->deskripsi,
-                'ruangan' => $request->ruangan,
-                'jenis_kegiatan' => $request->jenis_kegiatan,
-                'divisi' => $request->divisi,
-                'tanggal_mulai' => $request->tanggal_mulai,
-                'tanggal_berakhir' => $request->tanggal_berakhir,
+                'isi' => $request->isi
             ]);
 
             return response()->json(
                 [
                     'status' => true,
-                    'message' => 'Data Updated',
+                    'message' => 'Edited'
                 ],
                 200
             );
         } catch (Throwable $err) {
-
             return response()->json(
                 [
                     'status' => false,
@@ -149,9 +114,9 @@ class ScheduleController extends Controller
         }
     }
 
-    static public function deleteSchedule($id)
+    static public function deleteAnnouncement($id)
     {
-        if (!self::authenticateUser(Auth::user()) && Auth::user()->id != Jadwal::find($id)->id_user) {
+        if (Auth::user()->role != 'mentor' && Auth::user()->id == Pengumuman::find($id)->id_user) {
             return response()->json(
                 [
                     'status' => false,
@@ -162,27 +127,16 @@ class ScheduleController extends Controller
         }
 
         try {
-            if (!Jadwal::find($id)) {
-                return response()->json(
-                    [
-                        'status' => false,
-                        'message' => 'Data not found',
-                    ],
-                    200
-                );
-            }
-
-            Jadwal::find($id)->delete();
+            Pengumuman::find($id)->delete();
 
             return response()->json(
                 [
                     'status' => true,
-                    'message' => 'Data deleted',
+                    'message' => 'Deleted'
                 ],
                 200
             );
         } catch (Throwable $err) {
-
             return response()->json(
                 [
                     'status' => false,
@@ -193,11 +147,10 @@ class ScheduleController extends Controller
         }
     }
 
-    static public function getAllSchedule()
+    static public function getAllAnnouncement()
     {
-
         try {
-            $data = Jadwal::all();
+            $data = Pengumuman::all();
 
             return response()->json(
                 [
@@ -219,11 +172,12 @@ class ScheduleController extends Controller
         }
     }
 
-    static public function getSchedule($id)
+    static public function getAnnouncementById($id)
     {
         try {
+            $data = Pengumuman::find($id)->get();
 
-            if (!Jadwal::find($id)) {
+            if ($data->isEmpty()) {
                 return response()->json(
                     [
                         'status' => false,
@@ -232,8 +186,6 @@ class ScheduleController extends Controller
                     200
                 );
             }
-
-            $data = Jadwal::find($id);
 
             return response()->json(
                 [
